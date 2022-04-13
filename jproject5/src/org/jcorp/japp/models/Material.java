@@ -80,7 +80,7 @@ public class Material {
         var materials = new ArrayList<Material>();
 
         try {
-            query = App.getConnection().prepareStatement(
+            query = App.connection.prepareStatement(
                 "select * from material;"
             );
 
@@ -110,74 +110,26 @@ public class Material {
         return materials;
     }
 
-    public Material save() {
-        PreparedStatement query = null;
-        try {
-            if (id != null) {
-                var existsCheckQuery = App.getConnection().prepareStatement(
-                    "select * from material where ID=?"
-                );
+    public Material save() throws SQLException {
+        var query = App.connection.prepareStatement(
+            "insert into material values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
 
-                existsCheckQuery.setInt(1, id);
-
-                var set = existsCheckQuery.executeQuery();
-
-                if (set.next()) {
-                    query = App.getConnection().prepareStatement(
-                        "update material set" +
-                            "Title=?, CountInPack=?, Unit=?, CountInStock=?, MinCount=?, Description=?, Cost=?, Image=?, MaterialType=?" +
-                            "where ID=?"
-                    );
-                    query.setString(1, title);
-                    query.setInt(2, countInPack);
-                    query.setString(3, unit);
-                    query.setInt(4, countInStock);
-                    query.setDouble(5, minCount);
-                    query.setString(6, description);
-                    query.setDouble(7, cost);
-                    query.setString(8, imagePath);
-                    query.setString(9, materialType);
-                    query.setInt(10, id);
-                }
-            }
-            if (query == null) {
-                query = App.getConnection().prepareStatement(
-                    "insert into material " +
-                        "(Title, CountInPack, Unit, CountInStock, MinCount, Description, Cost, Image, MaterialType) " +
-                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    Statement.RETURN_GENERATED_KEYS
-                );
-
-                query.setString(1, title);
-                query.setInt(2, countInPack);
-                query.setString(3, unit);
-                query.setInt(4, countInStock);
-                query.setDouble(5, minCount);
-                query.setString(6, description);
-                query.setDouble(7, cost);
-                query.setString(8, imagePath);
-                query.setString(9, materialType);
-            }
-
-            query.execute();
-
-            if (id == null) {
-                var set = query.getGeneratedKeys();
-                set.next();
-
-                setId(set.getInt(1));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return this;
+        query.setInt(1, id);
+        query.setString(2, title);
+        query.setInt(3, countInPack);
+        query.setString(4, unit);
+        query.setInt(5, countInStock);
+        query.setDouble(6, minCount);
+        query.setString(7, description);
+        query.setDouble(8, cost);
+        query.setString(9, imagePath);
+        query.setString(10, materialType);
     }
 
     static public void deleteById(Integer id) {
         try {
-            var query = App.getConnection().prepareStatement(
+            var query = App.connection.prepareStatement(
                 "delete from material where ID=?"
             );
 

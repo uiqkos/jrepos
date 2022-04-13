@@ -7,15 +7,19 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class App {
-    public static void main(String[] args) {
-        new MaterialListForm().setVisible(true);
-    }
+    public static Connection connection;
 
-    static public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(
-            "jdbc:mysql://127.0.0.1:3306/jdb?serverTimezone=Europe/Moscow",
-            "root",
-            "1234"
-        );
+    public static void main(String[] args) {
+        try {
+            connection = DriverManager.getConnection(
+                "jdbc:mysql://127.0.0.1:3306/jdb?serverTimezone=Europe/Moscow",
+                "root",
+                "1234"
+            );
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        new MaterialListForm().setVisible(true);
     }
 }

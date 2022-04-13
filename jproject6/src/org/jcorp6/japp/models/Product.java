@@ -3,12 +3,15 @@ package org.jcorp6.japp.models;
 import lombok.Data;
 import org.jcorp6.japp.App;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.lang.reflect.MalformedParameterizedTypeException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 public class Product {
@@ -41,10 +44,33 @@ public class Product {
         this.productionPersonCount = productionPersonCount;
         this.productionWorkshopNumber = productionWorkshopNumber;
         this.minCostForAgent = minCostForAgent;
+
+        if (imagePath == null || imagePath.isBlank()) {
+            imagePath = "picture.png";
+        } else {
+            imagePath = imagePath.replace('\\', '/').substring(1);
+        }
+
         this.imagePath = imagePath;
 
         try {
-            image = new ImageIcon()
+            image = new ImageIcon(
+            ImageIO.read(
+                Objects.requireNonNullElse(
+                    Product
+                        .class
+                        .getClassLoader()
+                        .getResource(imagePath),
+                    Product
+                        .class
+                        .getClassLoader()
+                        .getResource("picture.png")
+                    )
+                )
+                .getScaledInstance(30, 30, 0)
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }
@@ -103,77 +129,30 @@ public class Product {
         return products;
     }
 
-    public void save() {
-        try {
-            var query = App.getConnection().prepareStatement(
-                "insert into product (Title,ProductType,ArticleNumber,Description,Image,ProductionPersonCount,ProductionWorkshopNumber,MinCostForAgent)" +
-                    "values (?,?,?,?,?,?,?,?)",
-                Statement.RETURN_GENERATED_KEYS
-            );
+    public void save() throws SQLException {
+        var query = App.getConnection().prepareStatement(
+            "replace into product values (?,?,?,?,?,?,?,?,?) "
+        );
+        query.setObject(1, getId(), Types.INTEGER);
+//        query.setInt(1, getId());
+        query.setString(2, getTitle());
+        query.setString(3, getProductType());
+        query.setString(4, getArticleNumber());
+        query.setString(5, getDescription());
+        query.setString(6, getImagePath());
+        query.setInt(7, getProductionPersonCount());
+        query.setDouble(8, getProductionWorkshopNumber());
+        query.setDouble(9, getMinCostForAgent());
 
-            query.setString(1, getTitle());
-            query.setString(2, getProductType());
-            query.setString(3, getArticleNumber());
-            query.setString(4, getDescription());
-            query.setString(5, getImagePath());
-            query.setInt(6, getProductionPersonCount());
-            query.setDouble(7, getProductionWorkshopNumber());
-            query.setDouble(8, getMinCostForAgent());
-
-            var set = query.executeQuery();
-            set.next();
-
-            setId(set.getInt(1));
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        query.execute();
     }
 
-    public static void delete(int id) {
-        try {
-            var query = App.getConnection().prepareStatement(
-                "delete from product where ID=?"
-            );
+    public static void delete(int id) throws SQLException {
+        var query = App.getConnection().prepareStatement(
+            "delete from product where ID=?"
+        );
 
-            query.setInt(1, id);
-            query.execute();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void update() {
-        try {
-            var query = App.getConnection().prepareStatement(
-                "update product set Title=?," +
-                    "ProductType=?," +
-                    "ArticleNumber=?," +
-                    "Description=?," +
-                    "Image=?," +
-                    "ProductionPersonCount=?," +
-                    "ProductionWorkshopNumber=?," +
-                    "MinCostForAgent=? " +
-                    "where ID=?",
-                Statement.RETURN_GENERATED_KEYS
-            );
-
-            query.setString(1, getTitle());
-            query.setString(2, getProductType());
-            query.setString(3, getArticleNumber());
-            query.setString(4, getDescription());
-            query.setString(5, getImagePath());
-            query.setInt(6, getProductionPersonCount());
-            query.setDouble(7, getProductionWorkshopNumber());
-            query.setDouble(8, getMinCostForAgent());
-            query.setInt(9, id);
-
-            var set = query.executeQuery();
-            set.next();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        query.setInt(1, id);
+        query.execute();
     }
 }

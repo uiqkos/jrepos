@@ -22,6 +22,7 @@ public class CustomTableModel<T> extends AbstractTableModel {
     @Setter @Getter
     private Comparator<T> sorter;
 
+    @Getter
     private List<T> rows;
     private List<T> filteredRows;
 
@@ -63,6 +64,11 @@ public class CustomTableModel<T> extends AbstractTableModel {
         return filteredRows.get(row);
     }
 
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        return cls.getDeclaredFields()[columnIndex].getType();
+    }
+
     @SneakyThrows
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -74,5 +80,10 @@ public class CustomTableModel<T> extends AbstractTableModel {
     public void setRows(List<T> rows) {
         this.rows = rows;
         update();
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return columns.get(column);
     }
 }

@@ -9,9 +9,14 @@ import java.sql.SQLException;
 
 public class App {
     public static void main(String[] args) {
-        var mainForm = new ProductsForm();
-        mainForm.setVisible(true);
-        mainForm.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+
+        new ProductsForm().setVisible(true);
     }
 
     public static Connection getConnection() throws SQLException {
